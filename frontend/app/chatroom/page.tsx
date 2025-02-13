@@ -11,11 +11,11 @@ import { useRouter } from "next/navigation";
 
 const ChatRoom: React.FC = () => {
   const router = useRouter()
-  const { sendMessage, subscribeToUserCount } = useWebSocket();
+  const { sendMessage} = useWebSocket();
   const [newMessage, setNewMessage] = useState<string>("");
-  const [userCount, setUserCount] = useState<number>(0); // State for user count
   const user = useAppSelector(selectUser);
   const room = useAppSelector(selectRoom);
+  const userCount = room?.userCount || 0;
   const messages = room?.messages || [];
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -33,15 +33,6 @@ const ChatRoom: React.FC = () => {
     }
   }, [user, room, router]);
 
-  useEffect(() => {
-    // Send a message to trigger the user count request
-    sendMessage("/chat/getUserCount", {}); // This triggers the backend to send the user count to the topic
-
-    // Subscribe to user count topic
-    subscribeToUserCount((count) => {
-      setUserCount(count); // Update the user count based on server response
-    });
-  }, [sendMessage, subscribeToUserCount]);
 
   const handleSendMessage = () => {
     if (!newMessage) return;

@@ -38,16 +38,14 @@ public class ChatController {
 
         UserCountService.incrementUserCount();
         messagingTemplate.convertAndSend("/topic/userCount", UserCountService.getUserCount());
+
         headerAccessor.getSessionAttributes().put("username" , username);
         messagingTemplate.convertAndSend("/topic/messages" , ChatMessage.buildChatmessage(message,username,messageType));
         return new User(username);
     }
 
     @MessageMapping("/chat/getUserCount")
-    @SendToUser("/queue/connected")
     public void getUserCount(){
         messagingTemplate.convertAndSend("/topic/userCount", UserCountService.getUserCount());
     }
-
-
 }

@@ -42,21 +42,6 @@ export const useWebSocket = () => {
     }
   };
 
-  // Subscribe to user count
-  const subscribeToUserCount = (callback: (count: number) => void) => {
-    if (client && isConnected) {
-      const subscription = client.subscribe('/topic/userCount', (message) => {
-        const count = JSON.parse(message.body); // Parse the user count from the message
-        console.log(count);
-        callback(count);
-      });
-      console.log("Subscribed to user count updates");
-      return subscription;
-    } else {
-      console.log("No active WebSocket connection");
-    }
-  };
-
   const connect = () => {
     try {
       const webSocket = new SockJS(`${serverUrl}/ws`);
@@ -106,6 +91,5 @@ export const useWebSocket = () => {
     sendMessage,
     subscribe,
     unsubscribe,
-    subscribeToUserCount,
   };
 };

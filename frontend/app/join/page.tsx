@@ -6,15 +6,20 @@ import { useWebSocket } from "@/hooks/useWebsocket";
 import { setUser } from "@/stores/slices/userSlice";
 import { MessageType } from "@/types/message_type";
 import { useRouter } from "next/navigation";
+import { selectRoom } from "@/stores/slices/roomSlice";
+import { useAppSelector } from "@/stores/hook";
+import { selectWebsocket } from "@/stores/slices/webSocketSlice";
 
 const JoinPage: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { sendMessage, subscribe, unsubscribe, subscribeToUserCount } = useWebSocket();
+  const { sendMessage, subscribe, unsubscribe } = useWebSocket();
   const [userSubscription, setUserSubscription] = useState<Stomp.Subscription>();
-  const [userCount, setUserCount] = useState<number>(0); // State for user count
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const room = useAppSelector(selectRoom);
+  const userCount = room?.userCount || 0;
+  const { isConnected } = useAppSelector(selectWebsocket);
 
   const onUserConnected = (payload: Stomp.Message) =>  {
     const userObject = JSON.parse(payload.body);
@@ -24,14 +29,10 @@ const JoinPage: React.FC = () => {
   };
 
   useEffect(() => {
-    // Send a message to trigger the user count request
-    sendMessage("/chat/getUserCount", {}); // This triggers the backend to send the user count to the topic
-
-    // Subscribe to user count topic
-    subscribeToUserCount((count) => {
-      setUserCount(count); // Update the user count based on server response
-    });
-  }, [sendMessage, subscribeToUserCount]);
+    if (isConnected) {
+      sendMessage("/chat/getUserCount", {}); // ✅ Ensures WebSocket is ready
+    }
+  }, [isConnected]); // Runs only when `isConnected` updates
 
   useEffect(() => {
     setUserSubscription(userSubscription);
